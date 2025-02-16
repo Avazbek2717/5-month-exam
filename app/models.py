@@ -40,7 +40,7 @@ class Product(BaseModel):
     file_size = models.FloatField(help_text="File size in MB")
     file_type = models.CharField(max_length=10,choices=file_type)  # pptx, pdf, docx, etc.
     file = models.FileField(upload_to="media/products/")
-    
+    poster = models.ImageField(upload_to="media/product_poster")
 
     def __str__(self):
         return self.title

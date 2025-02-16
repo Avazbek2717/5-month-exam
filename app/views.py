@@ -1,46 +1,32 @@
-from django.shortcuts import render
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework import status
-from .models import Seller, Category, Product
-from .serializers import SellerSerializer, CategorySerializer, ProductSerializer
-
-class SellerListCreateAPIView(APIView):
-    def get(self, request):
-        sellers = Seller.objects.all()
-        serializer = SellerSerializer(sellers, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = SellerSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+from rest_framework import generics
+from .models import Seller, Product,Category
+from .serializers import SellerSerializer, ProductSerializer,CategorySerializer,ProductMainSerializer
+from django_filters.rest_framework import DjangoFilterBackend
 
 
-class CategoryListCreateAPIView(APIView):
-    def get(self, request):
-        categories = Category.objects.all()
-        serializer = CategorySerializer(categories, many=True)
-        return Response(serializer.data)
+class SellerDetailView(generics.RetrieveAPIView):
+    queryset = Seller.objects.all()
+    serializer_class = SellerSerializer
+    lookup_field = "id"  
 
-    def post(self, request):
-        serializer = CategorySerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+class ProductListView(generics.ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
 
-class ProductListCreateAPIView(APIView):
-    def get(self, request):
-        products = Product.objects.all()
-        serializer = ProductSerializer(products, many=True)
-        return Response(serializer.data)
+class SellerProductsView(generics.ListAPIView):
+    serializer_class = ProductSerializer
 
-    def post(self, request):
-        serializer = ProductSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+    def get_queryset(self):
+        seller_id = self.kwargs['seller_id']
+        return Product.objects.filter(seller_id=seller_id)
+    
+class CatogoryListView(generics.ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+class ProductMainWindowApi(generics.ListAPIView):
+    queryset = Product.objects.all().order_by('created_at')
+    serializer_class = ProductMainSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['created_at']
+    
